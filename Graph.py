@@ -10,6 +10,8 @@ Distributed under the GNU General Public License at gnu.org/licenses/gpl.html.
 class Vertex(object):
     """A Vertex is a node in a graph."""
 
+    label = ''
+
     def __init__(self, label=''):
         self.label = label
 
@@ -20,6 +22,9 @@ class Vertex(object):
 
     __str__ = __repr__
     """The str and repr forms of this object are the same."""
+
+    def getLabel(self):
+        return self.label
 
 
 class Edge(tuple):
