@@ -14,11 +14,9 @@ def setUpInvestors(sphere):
     nodes = sphere.g.vertices()
     for node in nodes:
         "Probabilistically decide on number of shares for investor, depending on that investor's number of social links"
-        numShares = random.random() * (len(sphere.g[node])+1) "TODO: Can experiment with how I decide this parameter"
-        "Randomly decide whether or not the investor is in the stock market (50/50 chance)"
-        startingPos = (random.random() <= 0.25) "TODO: Can experiment with this parameter"
+        numShares = random.random() * 10 * (len(sphere.g[node])+1) #TODO: Can experiment with how I decide this parameter
         "Set up investor"
-        investors[node.getLabel()] = Market.Investor(numShares, startingPos, node)
+        investors[node.getLabel()] = Market.Investor(numShares, node)
 
     "Return dictionary of investors"
     return investors
@@ -30,15 +28,31 @@ def setUpMarket(investors):
     The market is given a number of purchased shares (representing how many people are invested in it, and how many shares they've purchased)
     """
 
-    "Set up empty stock market"
-    market = Market.Market()
+    "Work out how many stocks all investors together can by"
+    totalSharesPurchasable = 0
+    for key in investors:
+        totalSharesPurchasable = totalSharesPurchasable + investors[key].getNumShares()
 
-    "Loop over all investors and check their starting position"
+    "Set up empty stock market, with stock limit at 0.60 of total stocks purchasable by investors"
+    market = Market.Market(float(0.6) * totalSharesPurchasable) #TODO: Can experiment with this parameter
+
+    "Loop over all investors, and probabilistically determine their starting position"
     for key in investors:
         curInvestor = investors[key]
-        if(curInvestor.isInMarket()):
-            "Add them to the market"
-            market.addInvestor(curInvestor)
+        "Randomly decide whether or not the investor is in the stock market (0.25 chance)"
+        startingPos = (random.random() <= 0.25) #TODO: Can experiment with this parameter
+        if(startingPos == False):
+            curInvestor.stayOutsideMarket()
+        "If they're in the market, add them to the market model, if there are enough shares available"
+        if(startingPos == True):
+            "Check if there are enough shares"
+            if(market.canJoin(curInvestor)):
+                "Add them to the market"
+                market.addInvestor(curInvestor)
+                curInvestor.enterMarket()
+            else:
+                "Investor can't join market"
+                curInvestor.stayOutsideMarket()
 
     "Return the market model"
     return market
@@ -51,39 +65,47 @@ def tick(market, investors, sphere, marketValues, curTime):
     """
 
     "Loop  over all investors"
-    for investor in investors:
+    for key in investors:
+        investor = investors[key]
         "For current investor, check whether they're inside/outside the market"
         if(investor.isInMarket()):
             "Calculate a probability for them to leave"
-            probToLeave = investor.probToLeave(sphere, marketValues, curTime, market)
+            probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market)
             "Determine whether or not they leave"
             if(random.random() <= probToLeave):
                 market.removeInvestor(investor)
+                investor.leaveMarket()
+            else:
+                investor.stayInMarket()
         else:
             "Calculate a probability for them to join"
-            probToJoin = investor.probToJoin(sphere, marketValues, curTime, market)
+            probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market)
             "Determine whether or not they join"
-            if(random.random <= probToJoin):
+            if(random.random() <= probToJoin and market.canJoin(investor)):
                 market.addInvestor(investor)
+                investor.enterMarket()
+            else:
+                investor.stayOutsideMarket()
 
 
 def main():
     "Set up social sphere"
-    s = SocialSphere.SocialSphere(1000) "TODO: Can experiment with this parameter"
+    s = SocialSphere.SocialSphere(1000) #TODO: Can experiment with this parameter
 
     "Set up dictionary of investors"
     investors = setUpInvestors(s)
 
     "Set up stock market"
     market = setUpMarket(investors)
+    print(market.totalShares)
 
     "Run simulation over multiple time steps"
     marketValues = []
-    marketValues.add(market.totalShares)
+    marketValues.append(market.totalShares)
     for i in range(1,1000):
         tick(market, investors, s, marketValues, i)
+        marketValues.append(market.totalShares)
 
     "Graph results"
-
 
 main()
