@@ -34,13 +34,13 @@ def setUpMarket(investors):
     for key in investors:
         totalSharesPurchasable = totalSharesPurchasable + investors[key].getNumShares()
 
-    "Set up empty stock market, with stock limit at 0.60 of total stocks purchasable by investors"
+    "Set up empty stock market, with stock limit at a fraction of total stocks purchasable by investors"
     market = Market.Market(float(0.6) * totalSharesPurchasable) #TODO: Can experiment with this parameter
 
     "Loop over all investors, and probabilistically determine their starting position"
     for key in investors:
         curInvestor = investors[key]
-        "Randomly decide whether or not the investor is in the stock market (0.25 chance)"
+        "Randomly decide whether or not the investor is in the stock market"
         startingPos = (random.random() <= 0.25) #TODO: Can experiment with this parameter
         if(startingPos == False):
             curInvestor.stayOutsideMarket()
@@ -66,6 +66,8 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
     """
 
     "Loop  over all investors"
+    numJoined = 0
+    numLeft = 0
     for key in investors:
         investor = investors[key]
         "For current investor, check whether they're inside/outside the market"
@@ -74,6 +76,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
             probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections)
             "Determine whether or not they leave"
             if(random.random() <= probToLeave):
+                numLeft = numLeft + 1
                 market.removeInvestor(investor)
                 investor.leaveMarket()
             else:
@@ -85,8 +88,10 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
             if(random.random() <= probToJoin and market.canJoin(investor)):
                 market.addInvestor(investor)
                 investor.enterMarket()
+                numJoined = numJoined + 1
             else:
                 investor.stayOutsideMarket()
+    print(str(numJoined) + ' ' + str(numLeft))
 
 def getLargestNumConnections(sphere):
     largest = 0
@@ -99,7 +104,7 @@ def getLargestNumConnections(sphere):
 
 def main():
     "Set up social sphere"
-    s = SocialSphere.SocialSphere(1000) #TODO: Can experiment with this parameter
+    s = SocialSphere.SocialSphere(3000) #TODO: Can experiment with this parameter
 
     "Set up dictionary of investors"
     investors = setUpInvestors(s)
@@ -113,7 +118,7 @@ def main():
     "Run simulation over multiple time steps, and plot results as they're generated"
     marketValues = []
     marketValues.append(market.totalShares)
-    for i in range(1,100):
+    for i in range(1,150):
         tick(market, investors, s, marketValues, i, largestNumConnections)
         marketValues.append(market.totalShares)
 

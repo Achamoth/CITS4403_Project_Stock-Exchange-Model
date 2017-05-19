@@ -66,13 +66,11 @@ class Investor(object):
             #Change probability depending on connection's current stance
             if(currentlyInMarket):
                 #Move probability to join towards 1, taking into account connection strength
-                #TODO: Calculate a between 0 and 1. a increases with connection strength
-                a = max(0.5, float(connectionStrength/largestNumConnections))
+                a = float(float(connectionStrength/largestNumConnections)*0.45)
                 prob = prob + float(a * float(1.0-prob))
             else:
                 #Move probability to join towards 0, taking into account connection strength
-                #TODO: Calculate a between 0 and 1. a increases with connection strength
-                a = max(0.5, float(connectionStrength/largestNumConnections))
+                a = float(float(connectionStrength/largestNumConnections)*0.65)
                 prob = prob - float(a * prob)
 
             #Determine whether or not the connection has recently left the market (unless we're only in the first timestep)
@@ -82,21 +80,18 @@ class Investor(object):
                 recentlyJoinedMarket = (connectionMarketHistory[curTime-2]==False and connectionMarketHistory[curTime-1]==True)
                 if(recentlyLeftMarket):
                     #Move probability to join towards 0, taking into account connection strength
-                    #TODO: Calculate a between 0 and 1. a increases with connection strength
-                    a = max(0.6, float(connectionStrength/largestNumConnections))
+                    a = float(float(connectionStrength/largestNumConnections)*0.5)
                     prob = prob - float(a * prob)
                 elif(recentlyJoinedMarket):
                     #Move probability to join towards 1, taking into account connection strength
-                    #TODO: Calculate a between 0 and 1. a increases with connection strength
-                    a = max(0.6, float(connectionStrength/largestNumConnections))
+                    a = float(float(connectionStrength/largestNumConnections)*0.7)
                     prob = prob + float(a * float(1.0 - prob))
 
 
         #Now, after looking at all connections, look at whether or not the number of shares purchased is approaching the market's limit
-        if(float(market.totalShares) >= float(market.limit * 0.75)): #TODO: Can experiment with this parameter
+        if(float(market.totalShares) >= float(market.limit * 0.92)): #TODO: Can experiment with this parameter
             #Move probability to join towards 0, taking into account how close to the limit market is
-            #TODO: Calculate a between 0 and 1. a increases as market approaches limit
-            a = max(0.7, float(market.totalShares / market.limit))
+            a = float(float(market.totalShares / market.limit)*0.75)
             prob = prob - float(a * prob)
 
         #If we're in the first timestep, we can't look at the market's recent change history. Just return the currently calculated probability
@@ -109,16 +104,15 @@ class Investor(object):
         #Now change probability depending on recentChange (if it's large and negative, probability should move towards 0, if it's large and positive, it should move towards 1)
         if(recentChange > 0):
             #Move probability to join towards 1, taking into account extent of change
-            #TODO: Calculate a between 0 and 1. The larger the change, the larger a
-            a = float(abs(recentChange) / market.limit)
+            a = float(float(abs(recentChange) / market.limit)*0.65)
             prob = prob - float(a * float(1.0 - prob))
 
         elif(recentChange < 0):
             #Move proability to join towards 0, taking into account extent of change
-            #TODO: Calculate a between 0 and 1. The larger the change, the larger a
-            a = float(abs(recentChange) / market.limit)
+            a = float(float(abs(recentChange) / market.limit)*0.5)
             prob = prob - float(a * prob)
 
+        #return prob
         return prob
 
 
@@ -152,13 +146,11 @@ class Investor(object):
             #Change probability depending on connection's current stance
             if(currentlyInMarket):
                 #Move probability to leave towards 0, taking into account connection strength
-                #TODO: Calculate a. The larger connection strength is, the larger a should be (between 0 and 1)
-                a = max(0.5, float(connectionStrength/largestNumConnections))
+                a = float(float(connectionStrength/largestNumConnections)*0.24)
                 prob = prob - float(a * prob)
             else:
                 #Move probability to leave towards 1, taking into account connection strength
-                #TODO: Calculate a. The larger connection strength is, the larger a should be (between 0 and 1)
-                a = max(0.5, float(connectionStrength/largestNumConnections))
+                a = float(float(connectionStrength/largestNumConnections)*0.55)
                 prob = prob + float(a *float(1.0 - prob))
 
             #Look at whether or not the connection has recently left the market (unless we're only in the first timestep)
@@ -168,21 +160,18 @@ class Investor(object):
                 recentlyJoinedMarket = (connectionMarketHistory[curTime-2]==False and connectionMarketHistory[curTime-1]==True)
                 if(recentlyLeftMarket):
                     #Move probability to leave towards 1, taking into account connection strength
-                    #TODO: Calculate a between 0 and 1. Larger connection strength means larger a
-                    a = max(0.6, float(connectionStrength/largestNumConnections))
+                    a = float(float(connectionStrength/largestNumConnections)*0.65)
                     prob = prob + float(a * float(1.0-prob))
                 elif(recentlyJoinedMarket):
                     #Move probability to leave towards 0, taking into account connection strength
-                    #TODO: Calculate a between 0 and 1. Larger connection strength means larger a
-                    a = max(0.6, float(connectionStrength/largestNumConnections))
+                    a = float(float(connectionStrength/largestNumConnections)*0.3)
                     prob = prob - float(a * prob)
 
 
         #Now, after looking at all connections, look at whether or not the number of shares purchased is approaching the market's limit
-        if(float(market.totalShares) >= float(market.limit * 0.75)): #TODO: Can experiment with this parameter
+        if(float(market.totalShares) >= float(market.limit * 0.92)): #TODO: Can experiment with this parameter
             #Move probability to leave towards 1, taking into account how close to the limit market is
-            #TODO: Calculate a between 0 and 1. Closer to limit means larger a
-            a = max(0.7, float(market.totalShares / market.limit))
+            a = float(float(market.totalShares / market.limit)*0.6)
             prob = prob + float(a * float(1.0-prob))
 
         #If we're in the first timestep, we can't look at the market's recent change history. Just return the currently calculated probability
@@ -195,16 +184,15 @@ class Investor(object):
         #Now change probability depending on recentChange (if it's large and negative, probability should move towards 1, if it's large and positive, it should move towards 0)
         if(recentChange > 0):
             #Move probability to leave towards 0, taking into account extent of change
-            #TODO: Calculate a between 0 and 1. Larger change means larger a
-            a = float(abs(recentChange) / market.limit)
+            a = float(float(abs(recentChange) / market.limit)*0.3)
             prob = prob - float(a * prob)
 
         elif(recentChange < 0):
             #Move proability to leave towards 1, taking into account extent of change
-            #TODO: Calculate a between 0 and 1. Larger change means larger a
-            a = float(abs(recentChange) / market.limit)
+            a = float(float(abs(recentChange) / market.limit)*0.7)
             prob = prob + float(a * float(1.0-prob))
 
+        #return prob
         return prob
 
 
