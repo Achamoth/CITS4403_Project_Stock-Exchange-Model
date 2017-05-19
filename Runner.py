@@ -1,6 +1,7 @@
 import Market
 import SocialSphere
 import random
+import csv
 
 def setUpInvestors(sphere):
     """
@@ -58,7 +59,7 @@ def setUpMarket(investors):
     return market
 
 
-def tick(market, investors, sphere, marketValues, curTime):
+def tick(market, investors, sphere, marketValues, curTime, largestNumConnections):
     """
     Performs a 'tick' operation on the simulation, moving it forward by one timestep
     For each investor, calculates a probability for them to join/leave the market based on certain factors, and then executes that probabily, and changes market accordingly
@@ -70,7 +71,7 @@ def tick(market, investors, sphere, marketValues, curTime):
         "For current investor, check whether they're inside/outside the market"
         if(investor.isInMarket()):
             "Calculate a probability for them to leave"
-            probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market)
+            probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections)
             "Determine whether or not they leave"
             if(random.random() <= probToLeave):
                 market.removeInvestor(investor)
@@ -79,13 +80,21 @@ def tick(market, investors, sphere, marketValues, curTime):
                 investor.stayInMarket()
         else:
             "Calculate a probability for them to join"
-            probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market)
+            probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market, largestNumConnections)
             "Determine whether or not they join"
             if(random.random() <= probToJoin and market.canJoin(investor)):
                 market.addInvestor(investor)
                 investor.enterMarket()
             else:
                 investor.stayOutsideMarket()
+
+def getLargestNumConnections(sphere):
+    largest = 0
+    nodes = sphere.g.vertices()
+    for key in nodes:
+        numConnections = len(sphere.g[key])
+        largest = max(numConnections, largest)
+    return largest
 
 
 def main():
@@ -97,15 +106,20 @@ def main():
 
     "Set up stock market"
     market = setUpMarket(investors)
-    print(market.totalShares)
 
-    "Run simulation over multiple time steps"
+    "Get largest number of connections any one investor has"
+    largestNumConnections = getLargestNumConnections(s)
+
+    "Run simulation over multiple time steps, and plot results as they're generated"
     marketValues = []
     marketValues.append(market.totalShares)
-    for i in range(1,1000):
-        tick(market, investors, s, marketValues, i)
+    for i in range(1,100):
+        tick(market, investors, s, marketValues, i, largestNumConnections)
         marketValues.append(market.totalShares)
 
-    "Graph results"
+    "Print all results to a csv file"
+    with open('results.csv', 'wb') as myfile:
+        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+        wr.writerow(marketValues)
 
 main()
