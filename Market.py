@@ -47,7 +47,7 @@ class Investor(object):
     def probToJoin(self, sphere, investors, marketValues, curTime, market, largestNumConnections):
 
         #Start off with a random probability
-        prob = max(0.5, random.random())
+        prob = max(0.1, random.random())
 
         #First look at all of the investor's connections in the social sphere
         connections = sphere.g[self.node]
@@ -63,11 +63,11 @@ class Investor(object):
             #Change probability depending on connection's current stance
             if(currentlyInMarket):
                 #Move probability to join towards 1, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections)*0.65)
+                a = float(float(connectionStrength/largestNumConnections)*0.3)
                 prob = prob + float(a * float(1.0-prob))
             else:
                 #Move probability to join towards 0, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections)*0.3)
+                a = float(float(connectionStrength/largestNumConnections)*0.85)
                 prob = prob - float(a * prob)
                 pass
 
@@ -78,11 +78,11 @@ class Investor(object):
                 recentlyJoinedMarket = (connectionMarketHistory[curTime-2]==False and connectionMarketHistory[curTime-1]==True)
                 if(recentlyLeftMarket):
                     #Move probability to join towards 0, taking into account connection strength
-                    a = float(float(connectionStrength/largestNumConnections)*0.4)
+                    a = float(float(connectionStrength/largestNumConnections)*0.7)
                     prob = prob - float(a * prob)
                 elif(recentlyJoinedMarket):
                     #Move probability to join towards 1, taking into account connection strength
-                    a = float(float(connectionStrength/largestNumConnections)*0.7)
+                    a = float(float(connectionStrength/largestNumConnections)*0.35)
                     prob = prob + float(a * float(1.0 - prob))
 
 
@@ -102,16 +102,16 @@ class Investor(object):
         #Now change probability depending on recentChange (if it's large and negative, probability should move towards 0, if it's large and positive, it should move towards 1)
         if(recentChange > 0):
             #Move probability to join towards 1, taking into account extent of change
-            a = float(float(abs(recentChange) / market.limit)*0.7)
+            a = float(float(abs(recentChange) / market.limit)*0.37)
             prob = prob - float(a * float(1.0 - prob))
 
         elif(recentChange < 0):
             #Move proability to join towards 0, taking into account extent of change
-            a = float(float(abs(recentChange) / market.limit)*0.3)
+            a = float(float(abs(recentChange) / market.limit)*0.87)
             prob = prob - float(a * prob)
 
         #return prob
-        return prob
+        return prob-0.25
 
 
     """
@@ -125,7 +125,7 @@ class Investor(object):
     def probToLeave(self, sphere, investors, marketValues, curTime, market, largestNumConnections):
 
         #Start off with a random probability
-        prob = max(0.45, random.random())
+        prob = max(0.85, random.random())
 
         #First look at all of the investor's connections in the social sphere
         connections = sphere.g[self.node]
@@ -141,11 +141,11 @@ class Investor(object):
             #Change probability depending on connection's current stance
             if(currentlyInMarket):
                 #Move probability to leave towards 0, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections)*0.7)
+                a = float(float(connectionStrength/largestNumConnections)*0.32)
                 prob = prob - float(a * prob)
             else:
                 #Move probability to leave towards 1, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections)*0.3)
+                a = float(float(connectionStrength/largestNumConnections)*0.86)
                 prob = prob + float(a *float(1.0 - prob))
 
             #Look at whether or not the connection has recently left the market (unless we're only in the first timestep)
@@ -155,11 +155,11 @@ class Investor(object):
                 recentlyJoinedMarket = (connectionMarketHistory[curTime-2]==False and connectionMarketHistory[curTime-1]==True)
                 if(recentlyLeftMarket):
                     #Move probability to leave towards 1, taking into account connection strength
-                    a = float(float(connectionStrength/largestNumConnections)*0.4)
+                    a = float(float(connectionStrength/largestNumConnections)*0.8)
                     prob = prob + float(a * float(1.0-prob))
                 elif(recentlyJoinedMarket):
                     #Move probability to leave towards 0, taking into account connection strength
-                    a = float(float(connectionStrength/largestNumConnections)*0.8)
+                    a = float(float(connectionStrength/largestNumConnections)*0.4)
                     prob = prob - float(a * prob)
 
 
@@ -179,16 +179,16 @@ class Investor(object):
         #Now change probability depending on recentChange (if it's large and negative, probability should move towards 1, if it's large and positive, it should move towards 0)
         if(recentChange > 0):
             #Move probability to leave towards 0, taking into account extent of change
-            a = float(float(abs(recentChange) / market.limit)*0.7)
+            a = float(float(abs(recentChange) / market.limit)*0.23)
             prob = prob - float(a * prob)
 
         elif(recentChange < 0):
             #Move proability to leave towards 1, taking into account extent of change
-            a = float(float(abs(recentChange) / market.limit)*0.3)
+            a = float(float(abs(recentChange) / market.limit)*0.84)
             prob = prob + float(a * float(1.0-prob))
 
         #return prob
-        return prob
+        return prob+0.3
 
 
 class Market(object):

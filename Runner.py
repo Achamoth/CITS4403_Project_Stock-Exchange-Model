@@ -75,7 +75,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
             "Calculate a probability for them to leave"
             probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections)
             "Determine whether or not they leave"
-            if(random.random() <= probToLeave):
+            if(random.random() <= probToLeave and numLeft < 3000/4):
                 numLeft = numLeft + 1
                 market.removeInvestor(investor)
                 investor.leaveMarket()
@@ -85,13 +85,13 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
             "Calculate a probability for them to join"
             probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market, largestNumConnections)
             "Determine whether or not they join"
-            if(random.random() <= probToJoin and market.canJoin(investor)):
+            if(random.random() <= probToJoin and market.canJoin(investor) and numJoined < 3000/4):
                 market.addInvestor(investor)
                 investor.enterMarket()
                 numJoined = numJoined + 1
             else:
                 investor.stayOutsideMarket()
-    #print(str(numJoined) + ' ' + str(numLeft))
+    print(str(numJoined) + ' ' + str(numLeft))
 
 def getLargestNumConnections(sphere):
     largest = 0
