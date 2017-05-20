@@ -43,14 +43,11 @@ class Investor(object):
     -How this investor's connections have changed their stance in the last timestep
     -How the market has changed from the last timestep to the current timestep
     -Whether the number of shares purchased is approaching the limit of the market (within 80%)
-    TODO: Can consider adding the following factors:
-    -Whether or not this investor has been in the market before, and if so, how many times they've left (signs of instability?)
-    -Can consider looking at a recent history of timesteps, rather than just the last timestep
     """
     def probToJoin(self, sphere, investors, marketValues, curTime, market, largestNumConnections):
 
         #Start off with a random probability
-        prob = random.random()
+        prob = max(0.5, random.random())
 
         #First look at all of the investor's connections in the social sphere
         connections = sphere.g[self.node]
@@ -66,12 +63,13 @@ class Investor(object):
             #Change probability depending on connection's current stance
             if(currentlyInMarket):
                 #Move probability to join towards 1, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections)*0.45)
+                a = float(float(connectionStrength/largestNumConnections)*0.65)
                 prob = prob + float(a * float(1.0-prob))
             else:
                 #Move probability to join towards 0, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections)*0.65)
+                a = float(float(connectionStrength/largestNumConnections)*0.3)
                 prob = prob - float(a * prob)
+                pass
 
             #Determine whether or not the connection has recently left the market (unless we're only in the first timestep)
             if(curTime > 1):
@@ -80,7 +78,7 @@ class Investor(object):
                 recentlyJoinedMarket = (connectionMarketHistory[curTime-2]==False and connectionMarketHistory[curTime-1]==True)
                 if(recentlyLeftMarket):
                     #Move probability to join towards 0, taking into account connection strength
-                    a = float(float(connectionStrength/largestNumConnections)*0.5)
+                    a = float(float(connectionStrength/largestNumConnections)*0.4)
                     prob = prob - float(a * prob)
                 elif(recentlyJoinedMarket):
                     #Move probability to join towards 1, taking into account connection strength
@@ -89,7 +87,7 @@ class Investor(object):
 
 
         #Now, after looking at all connections, look at whether or not the number of shares purchased is approaching the market's limit
-        if(float(market.totalShares) >= float(market.limit * 0.92)): #TODO: Can experiment with this parameter
+        if(float(marketValues[curTime-1]) >= float(market.limit * 0.90)): #TODO: Can experiment with this parameter
             #Move probability to join towards 0, taking into account how close to the limit market is
             a = float(float(market.totalShares / market.limit)*0.75)
             prob = prob - float(a * prob)
@@ -99,17 +97,17 @@ class Investor(object):
             return prob
 
         #Now, after looking at all connections and the limit, look at how the market has changed recently
-        recentChange = marketValues[curTime-1] - marketValues[curTime-2]
+        recentChange = marketValues[curTime-1] - marketValues[0]
 
         #Now change probability depending on recentChange (if it's large and negative, probability should move towards 0, if it's large and positive, it should move towards 1)
         if(recentChange > 0):
             #Move probability to join towards 1, taking into account extent of change
-            a = float(float(abs(recentChange) / market.limit)*0.65)
+            a = float(float(abs(recentChange) / market.limit)*0.7)
             prob = prob - float(a * float(1.0 - prob))
 
         elif(recentChange < 0):
             #Move proability to join towards 0, taking into account extent of change
-            a = float(float(abs(recentChange) / market.limit)*0.5)
+            a = float(float(abs(recentChange) / market.limit)*0.3)
             prob = prob - float(a * prob)
 
         #return prob
@@ -123,14 +121,11 @@ class Investor(object):
     -How this investor's connections have changed their stance in the last timestep
     -How the market has changed from the last timestep to the current timestep
     -Whether the number of shares purchased is approaching the limit of the market (within 80%)
-    TODO: Can consider adding the following factors:
-    -Whether or not this investor has been in the market before, and if so, how many times they've left (signs of instability?)
-    -Can consider looking at a recent history of timesteps, rather than just the last timestep
     """
     def probToLeave(self, sphere, investors, marketValues, curTime, market, largestNumConnections):
 
         #Start off with a random probability
-        prob = random.random()
+        prob = max(0.45, random.random())
 
         #First look at all of the investor's connections in the social sphere
         connections = sphere.g[self.node]
@@ -146,11 +141,11 @@ class Investor(object):
             #Change probability depending on connection's current stance
             if(currentlyInMarket):
                 #Move probability to leave towards 0, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections)*0.24)
+                a = float(float(connectionStrength/largestNumConnections)*0.7)
                 prob = prob - float(a * prob)
             else:
                 #Move probability to leave towards 1, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections)*0.55)
+                a = float(float(connectionStrength/largestNumConnections)*0.3)
                 prob = prob + float(a *float(1.0 - prob))
 
             #Look at whether or not the connection has recently left the market (unless we're only in the first timestep)
@@ -160,18 +155,18 @@ class Investor(object):
                 recentlyJoinedMarket = (connectionMarketHistory[curTime-2]==False and connectionMarketHistory[curTime-1]==True)
                 if(recentlyLeftMarket):
                     #Move probability to leave towards 1, taking into account connection strength
-                    a = float(float(connectionStrength/largestNumConnections)*0.65)
+                    a = float(float(connectionStrength/largestNumConnections)*0.4)
                     prob = prob + float(a * float(1.0-prob))
                 elif(recentlyJoinedMarket):
                     #Move probability to leave towards 0, taking into account connection strength
-                    a = float(float(connectionStrength/largestNumConnections)*0.3)
+                    a = float(float(connectionStrength/largestNumConnections)*0.8)
                     prob = prob - float(a * prob)
 
 
         #Now, after looking at all connections, look at whether or not the number of shares purchased is approaching the market's limit
-        if(float(market.totalShares) >= float(market.limit * 0.92)): #TODO: Can experiment with this parameter
+        if(float(marketValues[curTime-1]) >= float(market.limit * 0.90)): #TODO: Can experiment with this parameter
             #Move probability to leave towards 1, taking into account how close to the limit market is
-            a = float(float(market.totalShares / market.limit)*0.6)
+            a = float(float(market.totalShares / market.limit)*0.65)
             prob = prob + float(a * float(1.0-prob))
 
         #If we're in the first timestep, we can't look at the market's recent change history. Just return the currently calculated probability
@@ -179,17 +174,17 @@ class Investor(object):
             return prob
 
         #Now, after looking at all connections and the limit, look at how the market has changed recently
-        recentChange = market.totalShares - marketValues[curTime-1]
+        recentChange = marketValues[curTime-1] - marketValues[0]
 
         #Now change probability depending on recentChange (if it's large and negative, probability should move towards 1, if it's large and positive, it should move towards 0)
         if(recentChange > 0):
             #Move probability to leave towards 0, taking into account extent of change
-            a = float(float(abs(recentChange) / market.limit)*0.3)
+            a = float(float(abs(recentChange) / market.limit)*0.7)
             prob = prob - float(a * prob)
 
         elif(recentChange < 0):
             #Move proability to leave towards 1, taking into account extent of change
-            a = float(float(abs(recentChange) / market.limit)*0.7)
+            a = float(float(abs(recentChange) / market.limit)*0.3)
             prob = prob + float(a * float(1.0-prob))
 
         #return prob

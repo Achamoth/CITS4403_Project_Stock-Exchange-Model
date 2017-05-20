@@ -44,7 +44,7 @@ class SocialSphere(object):
         v = Graph.Vertex(str(len(self.g)+1))
         self.g.add_vertex(v)
 
-        "Loop over all nodes in graph, and randomly edge from new node to each based on preferential attachment"
+        "Loop over all nodes in graph, and randomly add edge from new node to each based on preferential attachment"
         for node in nodes:
             "Get number of edges connected to current node"
             curDegree = len(self.g[node])

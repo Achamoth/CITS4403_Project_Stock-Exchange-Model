@@ -35,13 +35,13 @@ def setUpMarket(investors):
         totalSharesPurchasable = totalSharesPurchasable + investors[key].getNumShares()
 
     "Set up empty stock market, with stock limit at a fraction of total stocks purchasable by investors"
-    market = Market.Market(float(0.6) * totalSharesPurchasable) #TODO: Can experiment with this parameter
+    market = Market.Market(float(100000000000000.0) * totalSharesPurchasable) #TODO: Can experiment with this parameter
 
     "Loop over all investors, and probabilistically determine their starting position"
     for key in investors:
         curInvestor = investors[key]
         "Randomly decide whether or not the investor is in the stock market"
-        startingPos = (random.random() <= 0.25) #TODO: Can experiment with this parameter
+        startingPos = (random.random() <= 0.3) #TODO: Can experiment with this parameter
         if(startingPos == False):
             curInvestor.stayOutsideMarket()
         "If they're in the market, add them to the market model, if there are enough shares available"
@@ -91,7 +91,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
                 numJoined = numJoined + 1
             else:
                 investor.stayOutsideMarket()
-    print(str(numJoined) + ' ' + str(numLeft))
+    #print(str(numJoined) + ' ' + str(numLeft))
 
 def getLargestNumConnections(sphere):
     largest = 0
