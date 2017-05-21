@@ -35,7 +35,7 @@ def setUpMarket(investors):
         totalSharesPurchasable = totalSharesPurchasable + investors[key].getNumShares()
 
     "Set up empty stock market, with stock limit at a fraction of total stocks purchasable by investors"
-    market = Market.Market(float(100000000000000.0) * totalSharesPurchasable) #TODO: Can experiment with this parameter
+    market = Market.Market(float(0.77) * totalSharesPurchasable) #TODO: Can experiment with this parameter
 
     "Loop over all investors, and probabilistically determine their starting position"
     for key in investors:
@@ -74,8 +74,8 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
         if(investor.isInMarket()):
             "Calculate a probability for them to leave"
             probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections)
-            "Determine whether or not they leave"
-            if(random.random() <= probToLeave and numLeft < 3000/4):
+            "Determine whether or not they leave (if the investor has joined recently, they can't leave yet)"
+            if(random.random() <= probToLeave and (not investor.changedStanceRecently()) and numLeft <= 3000/5):
                 numLeft = numLeft + 1
                 market.removeInvestor(investor)
                 investor.leaveMarket()
@@ -84,8 +84,8 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
         else:
             "Calculate a probability for them to join"
             probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market, largestNumConnections)
-            "Determine whether or not they join"
-            if(random.random() <= probToJoin and market.canJoin(investor) and numJoined < 3000/4):
+            "Determine whether or not they join (if the investor has left recently, they can't join yet)"
+            if(random.random() <= probToJoin and market.canJoin(investor) and (not investor.changedStanceRecently()) and numJoined <= 3000/5):
                 market.addInvestor(investor)
                 investor.enterMarket()
                 numJoined = numJoined + 1
@@ -118,7 +118,7 @@ def main():
     "Run simulation over multiple time steps, and plot results as they're generated"
     marketValues = []
     marketValues.append(market.totalShares)
-    for i in range(1,150):
+    for i in range(1,2000):
         tick(market, investors, s, marketValues, i, largestNumConnections)
         marketValues.append(market.totalShares)
 

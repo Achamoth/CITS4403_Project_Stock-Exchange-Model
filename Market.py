@@ -8,6 +8,7 @@ class Investor(object):
     inMarket = False
     node = Graph.Vertex('')
     marketHistory = []
+    lastChange = 100
 
     def __init__(self, numShares, node):
         self.numShares = numShares
@@ -16,16 +17,20 @@ class Investor(object):
     def enterMarket(self):
         self.inMarket = True
         self.marketHistory.append(True)
+        self.lastChange = 0
 
     def leaveMarket(self):
         self.inMarket = False
         self.marketHistory.append(False)
+        self.lastChange = 0
 
     def stayInMarket(self):
         self.marketHistory.append(True)
+        self.lastChange = self.lastChange + 1
 
     def stayOutsideMarket(self):
         self.marketHistory.append(False)
+        self.lastChange = self.lastChange + 1
 
     def getNumShares(self):
         return self.numShares
@@ -35,6 +40,9 @@ class Investor(object):
 
     def getMarketHistory(self):
         return self.marketHistory
+
+    def changedStanceRecently(self):
+        return self.lastChange < 15
 
     """
     This method calculates a probability for the investor (not currently in the market) to enter the market
@@ -111,7 +119,7 @@ class Investor(object):
             prob = prob - float(a * prob)
 
         #return prob
-        return prob-0.25
+        return prob
 
 
     """
@@ -188,7 +196,7 @@ class Investor(object):
             prob = prob + float(a * float(1.0-prob))
 
         #return prob
-        return prob+0.3
+        return prob
 
 
 class Market(object):
