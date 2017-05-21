@@ -35,13 +35,13 @@ def setUpMarket(investors):
         totalSharesPurchasable = totalSharesPurchasable + investors[key].getNumShares()
 
     "Set up empty stock market, with stock limit at a fraction of total stocks purchasable by investors"
-    market = Market.Market(float(0.77) * totalSharesPurchasable) #TODO: Can experiment with this parameter
+    market = Market.Market(float(100000000000000.77) * totalSharesPurchasable)
 
     "Loop over all investors, and probabilistically determine their starting position"
     for key in investors:
         curInvestor = investors[key]
         "Randomly decide whether or not the investor is in the stock market"
-        startingPos = (random.random() <= 0.3) #TODO: Can experiment with this parameter
+        startingPos = (random.random() <= 0.25)
         if(startingPos == False):
             curInvestor.stayOutsideMarket()
         "If they're in the market, add them to the market model, if there are enough shares available"
@@ -66,6 +66,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
     """
 
     "Loop  over all investors"
+    marketSize = len(sphere.g)
     numJoined = 0
     numLeft = 0
     for key in investors:
@@ -75,23 +76,27 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
             "Calculate a probability for them to leave"
             probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections)
             "Determine whether or not they leave (if the investor has joined recently, they can't leave yet)"
-            if(random.random() <= probToLeave and (not investor.changedStanceRecently()) and numLeft <= 3000/5):
+            if(random.random() <= probToLeave and (not investor.changedStanceRecently()) and numLeft <= marketSize/50):
                 numLeft = numLeft + 1
                 market.removeInvestor(investor)
                 investor.leaveMarket()
+                if(len(sphere.g[investor.node]) > 10):
+                    print(str(len(sphere.g[investor.node]))) + ' left market at ' + str(curTime)
+                else:
+                    pass
             else:
                 investor.stayInMarket()
         else:
             "Calculate a probability for them to join"
             probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market, largestNumConnections)
             "Determine whether or not they join (if the investor has left recently, they can't join yet)"
-            if(random.random() <= probToJoin and market.canJoin(investor) and (not investor.changedStanceRecently()) and numJoined <= 3000/5):
+            if(random.random() <= probToJoin and market.canJoin(investor) and (not investor.changedStanceRecently()) and numJoined <= marketSize/50):
                 market.addInvestor(investor)
                 investor.enterMarket()
                 numJoined = numJoined + 1
             else:
                 investor.stayOutsideMarket()
-    print(str(numJoined) + ' ' + str(numLeft))
+    #print(str(numJoined) + ' ' + str(numLeft))
 
 def getLargestNumConnections(sphere):
     largest = 0
@@ -104,7 +109,7 @@ def getLargestNumConnections(sphere):
 
 def main():
     "Set up social sphere"
-    s = SocialSphere.SocialSphere(3000) #TODO: Can experiment with this parameter
+    s = SocialSphere.SocialSphere(3000)
 
     "Set up dictionary of investors"
     investors = setUpInvestors(s)
@@ -118,7 +123,7 @@ def main():
     "Run simulation over multiple time steps, and plot results as they're generated"
     marketValues = []
     marketValues.append(market.totalShares)
-    for i in range(1,2000):
+    for i in range(1,200):
         tick(market, investors, s, marketValues, i, largestNumConnections)
         marketValues.append(market.totalShares)
 
