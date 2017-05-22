@@ -35,7 +35,7 @@ def setUpMarket(investors):
         totalSharesPurchasable = totalSharesPurchasable + investors[key].getNumShares()
 
     "Set up empty stock market, with stock limit at a fraction of total stocks purchasable by investors"
-    market = Market.Market(float(100000000000000.77) * totalSharesPurchasable)
+    market = Market.Market(float(random.uniform(0.45, 0.85)) * totalSharesPurchasable)
 
     "Loop over all investors, and probabilistically determine their starting position"
     for key in investors:
