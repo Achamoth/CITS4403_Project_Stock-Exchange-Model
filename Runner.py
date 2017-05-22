@@ -80,8 +80,9 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
                 numLeft = numLeft + 1
                 market.removeInvestor(investor)
                 investor.leaveMarket()
-                if(len(sphere.g[investor.node]) > 10):
+                if(len(sphere.g[investor.node]) > 40):
                     print(str(len(sphere.g[investor.node]))) + ' left market at ' + str(curTime)
+                    pass
                 else:
                     pass
             else:
