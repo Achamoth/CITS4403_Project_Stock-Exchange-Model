@@ -61,7 +61,7 @@ class Investor(object):
     -Whether the number of shares purchased is approaching the limit of the market
     -Whether the investor has previously left the market
     """
-    def probToJoin(self, sphere, investors, marketValues, curTime, market, largestNumConnections):
+    def probToJoin(self, sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections):
 
         #Start off with a random probability
         prob = random.uniform(0.0, 0.2)
@@ -80,11 +80,13 @@ class Investor(object):
             #Change probability depending on connection's current stance
             if(currentlyInMarket):
                 #Move probability to join towards 1, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.3,0.6))
+                #a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.3,0.6))
+                a = (random.uniform(0.7,0.9)) if (connectionStrength >= (averageNumConnections + 15)) else (float(float(connectionStrength/largestNumConnections) * random.uniform(0.3,0.6)))
                 prob = prob + float(a * float(1.0-prob))
             else:
                 #Move probability to join towards 0, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.35,0.7))
+                #a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.35,0.7))
+                a = (random.uniform(0.7,0.9)) if (connectionStrength >= (averageNumConnections + 15)) else (float(float(connectionStrength/largestNumConnections) * random.uniform(0.35,0.7)))
                 prob = prob - float(a * prob)
                 pass
 
@@ -93,11 +95,13 @@ class Investor(object):
             recentlyJoinedMarket = investors[connection.getLabel()].recentlyJoinedMarket()
             if(recentlyLeftMarket):
                 #Move probability to join towards 0, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.4,0.8))
+                #a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.4,0.8))
+                a = (random.uniform(0.7,0.9)) if (connectionStrength >= (averageNumConnections + 15)) else (float(float(connectionStrength/largestNumConnections) * random.uniform(0.4,0.8)))
                 prob = prob - float(a * prob)
             elif(recentlyJoinedMarket):
                 #Move probability to join towards 1, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.4,0.83))
+                #a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.4,0.83))
+                a = (random.uniform(0.7,0.9)) if (connectionStrength >= (averageNumConnections + 15)) else (float(float(connectionStrength/largestNumConnections) * random.uniform(0.4,0.83)))
                 prob = prob + float(a * float(1.0 - prob))
 
 
@@ -124,7 +128,8 @@ class Investor(object):
         #Finally, look at whether or not the investor has left in the past. If they have, it should drastically reduce the probability of joining again
         a = 0.0
         if(self.numTimesLeft > 0):
-            a = float(0.85 + float(0.15 * float(self.numTimesLeft/3)))
+            #a = float(0.85 + float(0.15 * float(self.numTimesLeft/3)))
+            a = random.uniform(0.4,0.75)
         prob = prob - float(a * prob)
 
         #return prob
@@ -139,7 +144,7 @@ class Investor(object):
     -How the market has changed from the first timestep to the current timestep
     -Whether the number of shares purchased is approaching the limit of the market
     """
-    def probToLeave(self, sphere, investors, marketValues, curTime, market, largestNumConnections):
+    def probToLeave(self, sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections):
 
         #Start off with a random probability
         prob = random.uniform(0.0, 0.3)
@@ -158,11 +163,13 @@ class Investor(object):
             #Change probability depending on connection's current stance
             if(currentlyInMarket):
                 #Move probability to leave towards 0, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.3,0.65))
+                #a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.3,0.65))
+                a = (random.uniform(0.7,0.9)) if (connectionStrength >= (averageNumConnections + 15)) else (float(float(connectionStrength/largestNumConnections) * random.uniform(0.3,0.65)))
                 prob = prob - float(a * prob)
             else:
                 #Move probability to leave towards 1, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.33,0.72))
+                #a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.45,0.9))
+                a = (random.uniform(0.7,0.9)) if (connectionStrength >= (averageNumConnections + 15)) else (float(float(connectionStrength/largestNumConnections) * random.uniform(0.45,0.9)))
                 prob = prob + float(a *float(1.0 - prob))
 
             #Look at whether or not the connection has recently left the market
@@ -170,11 +177,13 @@ class Investor(object):
             recentlyJoinedMarket = investors[connection.getLabel()].recentlyJoinedMarket()
             if(recentlyLeftMarket):
                 #Move probability to leave towards 1, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.4,0.9))
+                #a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.55,0.99))
+                a = (random.uniform(0.7,0.9)) if (connectionStrength >= (averageNumConnections + 15)) else (float(float(connectionStrength/largestNumConnections) * random.uniform(0.55,0.99)))
                 prob = prob + float(a * float(1.0-prob))
             elif(recentlyJoinedMarket):
                 #Move probability to leave towards 0, taking into account connection strength
-                a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.35,0.8))
+                #a = float(float(connectionStrength/largestNumConnections) * random.uniform(0.35,0.8))
+                a = (random.uniform(0.7,0.9)) if (connectionStrength >= (averageNumConnections + 15)) else (float(float(connectionStrength/largestNumConnections) * random.uniform(0.35,0.8)))
                 prob = prob - float(a * prob)
 
 

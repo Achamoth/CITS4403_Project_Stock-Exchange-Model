@@ -59,7 +59,7 @@ def setUpMarket(investors):
     return market
 
 
-def tick(market, investors, sphere, marketValues, curTime, largestNumConnections):
+def tick(market, investors, sphere, marketValues, curTime, largestNumConnections, averageNumConnections):
     """
     Performs a 'tick' operation on the simulation, moving it forward by one timestep
     For each investor, calculates a probability for them to join/leave the market based on certain factors, and then executes that probabily, and changes market accordingly
@@ -74,27 +74,26 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
         "For current investor, check whether they're inside/outside the market"
         if(investor.isInMarket()):
             "Calculate a probability for them to leave"
-            probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections)
+            probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections)
             "Determine whether or not they leave (if the investor has joined recently, they can't leave yet)"
             if(random.random() <= probToLeave and (not investor.changedStanceRecently()) and numLeft <= marketSize/50):
                 numLeft = numLeft + 1
                 market.removeInvestor(investor)
                 investor.leaveMarket()
-                if(len(sphere.g[investor.node]) > 40):
+                if(len(sphere.g[investor.node]) > averageNumConnections + 15):
                     print(str(len(sphere.g[investor.node]))) + ' left market at ' + str(curTime)
-                    pass
-                else:
-                    pass
             else:
                 investor.stayInMarket()
         else:
             "Calculate a probability for them to join"
-            probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market, largestNumConnections)
+            probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections)
             "Determine whether or not they join (if the investor has left recently, they can't join yet)"
             if(random.random() <= probToJoin and market.canJoin(investor) and (not investor.changedStanceRecently()) and numJoined <= marketSize/50):
                 market.addInvestor(investor)
                 investor.enterMarket()
                 numJoined = numJoined + 1
+                if(len(sphere.g[investor.node]) >= averageNumConnections + 15):
+                    print(str(len(sphere.g[investor.node]))) + ' joined market at ' + str(curTime)
             else:
                 investor.stayOutsideMarket()
     #print(str(numJoined) + ' ' + str(numLeft))
@@ -106,6 +105,14 @@ def getLargestNumConnections(sphere):
         numConnections = len(sphere.g[key])
         largest = max(numConnections, largest)
     return largest
+
+def getAverageNumConnections(sphere):
+    total = 0
+    nodes = sphere.g.vertices()
+    for key in nodes:
+        numConnections = len(sphere.g[key])
+        total = total + numConnections
+    return (total / len(nodes))
 
 
 def main():
@@ -120,12 +127,14 @@ def main():
 
     "Get largest number of connections any one investor has"
     largestNumConnections = getLargestNumConnections(s)
+    "Get average number of connections within social sphere (B-A model)"
+    averageNumConnections = getAverageNumConnections(s)
 
     "Run simulation over multiple time steps, and plot results as they're generated"
     marketValues = []
     marketValues.append(market.totalShares)
     for i in range(1,200):
-        tick(market, investors, s, marketValues, i, largestNumConnections)
+        tick(market, investors, s, marketValues, i, largestNumConnections, averageNumConnections)
         marketValues.append(market.totalShares)
 
     "Print all results to a csv file"
