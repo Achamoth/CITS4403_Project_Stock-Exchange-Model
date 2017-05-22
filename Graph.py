@@ -83,7 +83,8 @@ class Graph(dict):
         try:
             return self[v1][v2]
         except KeyError:
-            print 'An edge does not exist between these two vertices'
+            return False
+
 
     def remove_edge(self, e):
         """Take an edge and remove all references to it from the graph"""
@@ -142,35 +143,33 @@ class Graph(dict):
                     #Add edge between pair of vertices
                     self[vertices[i]][vertices[j]] = Edge(vertices[i], vertices[j])
 
-    def add_regular_edges(self, deg):
-        """Starts with edgeless graph, and adds edges until all nodes have same degree"""
-        """THIS METHOD DOES NOT CURRENTLY WORK PROPERLY"""
-        numNodes = len(self)
-        #Ensure degree is <= (n-1), where n is number of vertices in graph
-        if(deg > (numNodes-1)):
-            return False
-        elif(deg % 2 != 0 and numNodes % 2 != 0):
-            #If degree is odd, number of nodes in graph must be even
-            return False
+    # via https://gist.github.com/yosemitebandit/625ae47565ae828cc417
+    # Though I did fix a mistake in the originally retrieved code
+    def add_regular_edges(self, degree):
+        vertices = self.vertices()
+        number_of_vertices = len(vertices)
+        if number_of_vertices < degree + 1:
+          raise ValueError('too high of a degree')
+        if (number_of_vertices * degree) % 2 != 0:
+          raise ValueError('n * degree must be even')
 
-        #It is possible to generate graph with the required degree
-        for curNode in self.keys():
-            #Ensure that 'deg' edges aren't alreay attached to this node
-            if(len(self[curNode]) == deg):
-                break;
-            #Add 'deg' edges to this node, ensuring that we're not breaking the rule for any other nodes
-            visited = []
-            #Loop over all nodes in graph and find one that we can add an edge to
-            for secondNode in self.keys():
-                if curNode == secondNode:
-                    continue
-                if(len(self[secondNode]) != deg):
-                    #Add edge between curNode and secondNode
-                    e = Edge(curNode, secondNode)
-                    self.add_edge(e)
-                    #Check if we've hit the degree
-                    if(len(self[curNode]) == deg):
-                        break;
+        # via http://math.stackexchange.com/questions/142112
+        for index in range(number_of_vertices):
+          if degree % 2 == 0:
+            number_of_neighbors_per_side = degree / 2
+          else:
+            number_of_neighbors_per_side = (degree - 1) / 2
+            # and connect the vertex directly opposed to this vertex
+            target_index = (index + number_of_vertices / 2) % number_of_vertices
+            edge = Edge(vertices[index], vertices[target_index])
+            self.add_edge(edge)
+          for j in range(number_of_neighbors_per_side):
+            target_index = (index + j + 1) % number_of_vertices
+            edge = Edge(vertices[index], vertices[target_index])
+            self.add_edge(edge)
+            target_index = (index - j - 1) % number_of_vertices
+            edge = Edge(vertices[index], vertices[target_index])
+            self.add_edge(edge)
 
     def is_regular(self):
         """Checks if the graph is regular. Returns true if it is; false otherwise"""

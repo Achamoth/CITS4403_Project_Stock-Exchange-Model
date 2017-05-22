@@ -107,6 +107,7 @@ def getLargestNumConnections(sphere):
     return largest
 
 def getAverageNumConnections(sphere):
+    "Given a social sphere object, return the average number of connections for a node in the social sphere's graph"
     total = 0
     nodes = sphere.g.vertices()
     for key in nodes:
@@ -117,7 +118,7 @@ def getAverageNumConnections(sphere):
 
 def main():
     "Set up social sphere"
-    s = SocialSphere.SocialSphere(3000)
+    s = SocialSphere.SocialSphere(3000, 'ws', 6, 0.15)
 
     "Set up dictionary of investors"
     investors = setUpInvestors(s)
