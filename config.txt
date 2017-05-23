@@ -1,5 +1,5 @@
 #Specifies the model to be used in setting up the social network. Should be ‘ba’ (Barabase Albert) or ‘ws’ (Watts Strogatz)
-model = ws
+model = ba
 
 #Specifies the size of the network (i.e. the number of investors in the market)
 size = 3000
@@ -8,7 +8,7 @@ size = 3000
 timesteps = 200
 
 #Probability of any given investor starting off in market (before first time step). Should be number between 0 and 1
-investor_start = 0.25
+investor_start = 0.35
 
 #Turns herd behaviour on or off. Should be ‘on’ or ‘off’.
 herd = on

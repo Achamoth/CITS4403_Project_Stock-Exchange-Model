@@ -56,17 +56,20 @@ class SocialSphere(object):
         v = Graph.Vertex(str(len(self.g)+1))
         self.g.add_vertex(v)
 
-        "Loop over all nodes in graph, and randomly add edge from new node to each based on preferential attachment"
-        for node in nodes:
-            "Get number of edges connected to current node"
-            curDegree = len(self.g[node])
-
-            "Probability to add edge is curDegree/sumOfDegrees"
-            prob = float(float(curDegree) / float(sumOfDegrees))
-            if random.random() <= prob:
-                "Add edge between new node and current node"
-                e = Graph.Edge(v, node)
-                self.g.add_edge(e)
+        "Add 2 edges to nodes within the graph"
+        for i in range(2):
+            "Use roulette wheel selection to determine where new edge goes"
+            s = random.randint(0, sumOfDegrees)
+            chosenNode = None
+            for node in nodes:
+                s = s - len(self.g[node])
+                if(s <= 0):
+                    chosenNode = node
+                    break
+            "Add edge and remove selected vertex from roulette wheel"
+            e = Graph.Edge(v, chosenNode)
+            self.g.add_edge(e)
+            sumOfDegrees = sumOfDegrees - len(self.g[chosenNode])
 
     def rewire(self, p):
         "Probabilistically rewires the edges in the graph to produce a Watts-Strogatz model of a small-world graph"
