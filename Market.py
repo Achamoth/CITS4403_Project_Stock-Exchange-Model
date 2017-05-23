@@ -61,13 +61,15 @@ class Investor(object):
     -Whether the number of shares purchased is approaching the limit of the market
     -Whether the investor has previously left the market
     """
-    def probToJoin(self, sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections):
+    def probToJoin(self, sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections, herdBehaviour):
 
         #Start off with a random probability
         prob = random.uniform(0.0, 0.2)
 
         #First look at all of the investor's connections in the social sphere
         connections = sphere.g[self.node]
+        if(herdBehaviour == False):
+            connections = []
 
         for connection in connections:
 
@@ -144,13 +146,15 @@ class Investor(object):
     -How the market has changed from the first timestep to the current timestep
     -Whether the number of shares purchased is approaching the limit of the market
     """
-    def probToLeave(self, sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections):
+    def probToLeave(self, sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections, herdBehaviour):
 
         #Start off with a random probability
         prob = random.uniform(0.0, 0.3)
 
         #First look at all of the investor's connections in the social sphere
         connections = sphere.g[self.node]
+        if(herdBehaviour == False):
+            connections = []
 
         for connection in connections:
 

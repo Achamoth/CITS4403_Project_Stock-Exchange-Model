@@ -23,7 +23,7 @@ def setUpInvestors(sphere):
     return investors
 
 
-def setUpMarket(investors):
+def setUpMarket(investors, probToStartInMarket):
     """
     Given a dictionary of investors, sets up the stock market model, and returns it
     The market is given a number of purchased shares (representing how many people are invested in it, and how many shares they've purchased)
@@ -41,7 +41,7 @@ def setUpMarket(investors):
     for key in investors:
         curInvestor = investors[key]
         "Randomly decide whether or not the investor is in the stock market"
-        startingPos = (random.random() <= 0.25)
+        startingPos = (random.random() <= probToStartInMarket)
         if(startingPos == False):
             curInvestor.stayOutsideMarket()
         "If they're in the market, add them to the market model, if there are enough shares available"
@@ -59,7 +59,7 @@ def setUpMarket(investors):
     return market
 
 
-def tick(market, investors, sphere, marketValues, curTime, largestNumConnections, averageNumConnections):
+def tick(market, investors, sphere, marketValues, curTime, largestNumConnections, averageNumConnections, herdBehaviour):
     """
     Performs a 'tick' operation on the simulation, moving it forward by one timestep
     For each investor, calculates a probability for them to join/leave the market based on certain factors, and then executes that probabily, and changes market accordingly
@@ -74,7 +74,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
         "For current investor, check whether they're inside/outside the market"
         if(investor.isInMarket()):
             "Calculate a probability for them to leave"
-            probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections)
+            probToLeave = investor.probToLeave(sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections, herdBehaviour)
             "Determine whether or not they leave (if the investor has joined recently, they can't leave yet)"
             if(random.random() <= probToLeave and (not investor.changedStanceRecently()) and numLeft <= marketSize/50):
                 numLeft = numLeft + 1
@@ -86,7 +86,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
                 investor.stayInMarket()
         else:
             "Calculate a probability for them to join"
-            probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections)
+            probToJoin = investor.probToJoin(sphere, investors, marketValues, curTime, market, largestNumConnections, averageNumConnections, herdBehaviour)
             "Determine whether or not they join (if the investor has left recently, they can't join yet)"
             if(random.random() <= probToJoin and market.canJoin(investor) and (not investor.changedStanceRecently()) and numJoined <= marketSize/50):
                 market.addInvestor(investor)
@@ -99,6 +99,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
     #print(str(numJoined) + ' ' + str(numLeft))
 
 def getLargestNumConnections(sphere):
+    "Given a social sphere object, return the largest number of connections any node in the graph has (i.e. largest degree)"
     largest = 0
     nodes = sphere.g.vertices()
     for key in nodes:
@@ -115,16 +116,54 @@ def getAverageNumConnections(sphere):
         total = total + numConnections
     return (total / len(nodes))
 
+def readConfig(filename):
+    "Given the filename of a config file, read all of the parameters in the file, and return them"
+    parameters = {}
+    fin = open(filename)
+    #Read all lines in file
+    for line in fin:
+        #Remove leading and trailing whitespace, and trailing newline character
+        line = line.strip()
+        line = line.strip('\n')
+        #If line is empty, or a comment, skip it
+        if (not line or line[0] == '#'):
+            continue
+        #Split around '='  character, and strip tokens of leading and trailing whitespace
+        tokens = line.split('=')
+        tokens[0] = tokens[0].strip()
+        tokens[1] = tokens[1].strip()
+        #First token is name of parameter (second token is value)
+        if(tokens[0] == 'model'):
+            parameters['model'] = tokens[1]
+        elif(tokens[0] == 'size'):
+            parameters['size'] = int(tokens[1])
+        elif(tokens[0] == 'timesteps'):
+            parameters['timesteps'] = int(tokens[1])
+        elif(tokens[0] == 'investor_start'):
+            parameters['investor_start'] = float(tokens[1])
+        elif(tokens[0] == 'herd'):
+            parameters['herd'] = (tokens[1] == 'on')
+        elif(tokens[0] == 'k'):
+            parameters['k'] = int(tokens[1])
+        elif(tokens[0] == 'rewire'):
+            parameters['rewire'] = float(tokens[1])
+    return parameters
 
 def main():
+    "Read all parameters from config file"
+    params = readConfig('config.txt')
+
     "Set up social sphere"
-    s = SocialSphere.SocialSphere(3000, 'ws', 6, 0.15)
+    if(params['model'] == 'ba'):
+        s = SocialSphere.SocialSphere(params['size'], params['model'])
+    else:
+        s = SocialSphere.SocialSphere(params['size'], params['model'], params['k'], params['rewire'])
 
     "Set up dictionary of investors"
     investors = setUpInvestors(s)
 
     "Set up stock market"
-    market = setUpMarket(investors)
+    market = setUpMarket(investors, params['investor_start'])
 
     "Get largest number of connections any one investor has"
     largestNumConnections = getLargestNumConnections(s)
@@ -134,8 +173,8 @@ def main():
     "Run simulation over multiple time steps, and plot results as they're generated"
     marketValues = []
     marketValues.append(market.totalShares)
-    for i in range(1,200):
-        tick(market, investors, s, marketValues, i, largestNumConnections, averageNumConnections)
+    for i in range(1,(params['timesteps']+1)):
+        tick(market, investors, s, marketValues, i, largestNumConnections, averageNumConnections, params['herd'])
         marketValues.append(market.totalShares)
 
     "Print all results to a csv file"

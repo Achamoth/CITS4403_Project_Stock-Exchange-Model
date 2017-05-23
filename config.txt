@@ -1,0 +1,20 @@
+#Specifies the model to be used in setting up the social network. Should be ‘ba’ (Barabase Albert) or ‘ws’ (Watts Strogatz)
+model = ba
+
+#Specifies the size of the network (i.e. the number of investors in the market)
+size = 3000
+
+#Specifies the number of time steps over which the simulation should be run
+timesteps = 200
+
+#Probability of any given investor starting off in market (before first time step). Should be number between 0 and 1
+investor_start = 0.25
+
+#Turns herd behaviour on or off. Should be ‘on’ or ‘off’.
+herd = on
+
+#k value (only relevant if using Watts Strogatz model). Degree of each investor in initial regular graph. If ‘size’ is odd, k has to be even
+k = 3
+
+#Probability of edge rewiring (only relevant if using Watts Strogatz model). Should be number between  0 and 1
+rewire = 0.15
