@@ -1,5 +1,5 @@
 #Specifies the model to be used in setting up the social network. Should be ‘ba’ (Barabase Albert) or ‘ws’ (Watts Strogatz)
-model = ba
+model = ws
 
 #Specifies the size of the network (i.e. the number of investors in the market)
 size = 3000

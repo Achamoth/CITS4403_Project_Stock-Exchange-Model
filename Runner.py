@@ -2,6 +2,7 @@ import Market
 import SocialSphere
 import random
 import csv
+import matplotlib.pyplot as plt
 
 def setUpInvestors(sphere):
     """
@@ -81,7 +82,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
                 market.removeInvestor(investor)
                 investor.leaveMarket()
                 if(len(sphere.g[investor.node]) > averageNumConnections + 15):
-                    print(str(len(sphere.g[investor.node]))) + ' left market at ' + str(curTime)
+                    print('Investor with ' + str(len(sphere.g[investor.node]))) + ' connections left market at ' + str(curTime)
             else:
                 investor.stayInMarket()
         else:
@@ -93,7 +94,7 @@ def tick(market, investors, sphere, marketValues, curTime, largestNumConnections
                 investor.enterMarket()
                 numJoined = numJoined + 1
                 if(len(sphere.g[investor.node]) >= averageNumConnections + 15):
-                    print(str(len(sphere.g[investor.node]))) + ' joined market at ' + str(curTime)
+                    print('Investor with ' + str(len(sphere.g[investor.node]))) + ' connections joined market at ' + str(curTime)
             else:
                 investor.stayOutsideMarket()
     #print(str(numJoined) + ' ' + str(numLeft))
@@ -181,5 +182,13 @@ def main():
     with open('results.csv', 'wb') as myfile:
         wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
         wr.writerow(marketValues)
+
+    "Plot resutls"
+    largestNumShares = max(marketValues)
+    plt.plot(marketValues)
+    plt.ylabel('Shares Purchased')
+    plt.xlabel('Time Steps')
+    plt.axis([0, params['timesteps'], 0, largestNumShares])
+    plt.show()
 
 main()
