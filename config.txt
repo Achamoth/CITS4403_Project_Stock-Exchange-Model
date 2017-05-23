@@ -5,7 +5,7 @@ model = ba
 size = 3000
 
 #Specifies the number of time steps over which the simulation should be run
-timesteps = 200
+timesteps = 300
 
 #Probability of any given investor starting off in market (before first time step). Should be number between 0 and 1
 investor_start = 0.35

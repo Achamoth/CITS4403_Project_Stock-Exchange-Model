@@ -3,7 +3,7 @@ import random
 
 class SocialSphere(object):
 
-    g = Graph.Graph()
+    g = None
 
     def __init__(self, n=100, model='ba', k=2, p=0.15):
         """Creates a new SocialSphere
@@ -11,6 +11,7 @@ class SocialSphere(object):
         model:  model used for network construction. Should be 'ba' for Barabase-Albert, or 'ws' for Watts-Strogatz
         k: The degree of each vertex. (Not relevant if the chosen model is Barabase-Albert)
         """
+        self.g = Graph.Graph()
         if(model == 'ba'): #Barabase-Albert model to be used. Construct scale-free network of specified size
             "Starts by creating a graph with 3 nodes"
             v1 = Graph.Vertex("1")

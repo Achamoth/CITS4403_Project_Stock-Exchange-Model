@@ -3,6 +3,7 @@ import SocialSphere
 import random
 import csv
 import matplotlib.pyplot as plt
+import numpy
 
 def setUpInvestors(sphere):
     """
@@ -150,6 +151,72 @@ def readConfig(filename):
             parameters['rewire'] = float(tokens[1])
     return parameters
 
+def plotSwingVals():
+    "Find all swing values for Barabasi-Albert model"
+    BAswings = []
+    for j in range(10):
+        s = SocialSphere.SocialSphere(3000, 'ba')
+        investors = setUpInvestors(s)
+        market = setUpMarket(investors, 0.35)
+        largestNumConnections = getLargestNumConnections(s)
+        averageNumConnections = getAverageNumConnections(s)
+        marketValues = []
+        marketValues.append(market.totalShares)
+        for i in range(1,301):
+            tick(market, investors, s, marketValues, i, largestNumConnections, averageNumConnections, True)
+            marketValues.append(market.totalShares)
+        swing = float((max(marketValues) - min(marketValues))/market.limit)
+        BAswings.append(swing)
+
+    "Find all swing values for Watts-Strogatz model"
+    WSswings = []
+    for j in range(10):
+        s = SocialSphere.SocialSphere(3000, 'ws', 3, 0.15)
+        investors = setUpInvestors(s)
+        market = setUpMarket(investors, 0.35)
+        largestNumConnections = getLargestNumConnections(s)
+        averageNumConnections = getAverageNumConnections(s)
+        marketValues = []
+        marketValues.append(market.totalShares)
+        for i in range(1,301):
+            tick(market, investors, s, marketValues, i, largestNumConnections, averageNumConnections, True)
+            marketValues.append(market.totalShares)
+        swing = float((max(marketValues) - min(marketValues))/market.limit)
+        WSswings.append(swing)
+
+    "Find all swing values for no herd behaviour"
+    NoHerdSwings = []
+    for j in range(10):
+        s = SocialSphere.SocialSphere(3000, 'ba', 3, 0.15)
+        investors = setUpInvestors(s)
+        market = setUpMarket(investors, 0.35)
+        largestNumConnections = getLargestNumConnections(s)
+        averageNumConnections = getAverageNumConnections(s)
+        marketValues = []
+        marketValues.append(market.totalShares)
+        for i in range(1,301):
+            tick(market, investors, s, marketValues, i, largestNumConnections, averageNumConnections, False)
+            marketValues.append(market.totalShares)
+        swing = float((max(marketValues) - min(marketValues))/market.limit)
+        NoHerdSwings.append(swing)
+
+    "Find 3 averages"
+    avgBA = float(sum(BAswings)/len(BAswings))
+    avgWS = float(sum(WSswings)/len(WSswings))
+    avgNoHerd = float(sum(NoHerdSwings)/len(NoHerdSwings))
+
+    "Plot data on bar chart"
+    swings = [avgBA, avgWS, avgNoHerd]
+    names = ['Barabasi-Albert', 'Watts-Strogatz', 'No Social Sphere']
+    y_pos = numpy.arange(len(names))
+    fig = plt.figure()
+    plt.bar(y_pos, swings, align='center')
+    plt.xticks(y_pos, names)
+    plt.ylabel('Market Swing')
+    fig.suptitle('Swing Values for Different Social Networks')
+    fig.savefig('Swings.jpg')
+    plt.show()
+
 def main():
     "Read all parameters from config file"
     params = readConfig('config.txt')
@@ -185,10 +252,14 @@ def main():
 
     "Plot resutls"
     largestNumShares = max(marketValues)
+    fig = plt.figure()
     plt.plot(marketValues)
+    fig.suptitle('Barabasi-Albert, 3000 investors')
     plt.ylabel('Shares Purchased')
     plt.xlabel('Time Steps')
     plt.axis([0, params['timesteps'], 0, largestNumShares])
+    fig.savefig('BA Model 3000.jpg')
     plt.show()
 
 main()
+#plotSwingVals()
