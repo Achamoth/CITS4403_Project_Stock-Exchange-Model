@@ -1,9 +1,0 @@
-Timesteps: 200
-Sphere size: 3000
-Model: Barabase-Albert
-
-Notes:
--Restricting number of people that can join in one time-step to sphere size/20
--Investors won’t join/leave if they’ve done so within the last 20 time-steps
--30% of investors start off in market
--Probability to join starts off at random value
