@@ -254,11 +254,11 @@ def main():
     largestNumShares = max(marketValues)
     fig = plt.figure()
     plt.plot(marketValues)
-    fig.suptitle('Barabasi-Albert, 3000 investors')
+    fig.suptitle('Market Values, ' + str(params['size']) + ' investors')
     plt.ylabel('Shares Purchased')
     plt.xlabel('Time Steps')
     plt.axis([0, params['timesteps'], 0, largestNumShares])
-    fig.savefig('BA Model 3000.jpg')
+    fig.savefig('result.jpg')
     plt.show()
 
 main()
